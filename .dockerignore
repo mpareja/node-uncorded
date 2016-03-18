@@ -1,0 +1,6 @@
+.git
+Dockerfile
+.dockerignore
+awslabs
+.idea
+coverage
