@@ -1,0 +1,44 @@
+{
+  "name": "uncorded",
+  "version": "0.0.1",
+  "description": "",
+  "private": true,
+  "main": "index.js",
+  "engines": {
+    "node": ">=4.2",
+    "npm": ">=2.12"
+  },
+  "scripts": {
+    "clean": "rimraf coverage",
+    "cov": "opener coverage/lcov-report/index.html",
+    "cov-check": "istanbul report && istanbul check-coverage",
+    "lint": "eslint --ignore-path .gitignore .",
+    "test": "npm run clean && npm run test-cov && npm run lint && npm run cov-check",
+    "test-cov": "istanbul cover --include-pid _mocha -- --recursive --reporter ${MOCHA_REPORTER:-spec} lib/test",
+    "test-only": "mocha --recursive lib/test",
+    "watch-test": "mocha --recursive -w lib/test"
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:mpareja/uncorded.git"
+  },
+  "bugs": {
+    "url": "https://github.com/mpareja/uncorded/issues"
+  },
+  "dependencies": {
+    "lodash": "^4.6.1",
+    "uuid": "^2.0.1"
+  },
+  "devDependencies": {
+    "chai": "^3.5.0",
+    "eslint": "^2.4.0",
+    "eslint-config-base": "github:360incentives/eslint-config-base#bc49647",
+    "istanbul": "^0.4.2",
+    "mocha": "^2.4.5",
+    "mocha-teamcity-reporter": "^1.0.0",
+    "opener": "^1.4.1",
+    "pre-commit": "^1.1.2",
+    "rimraf": "^2.5.2"
+  }
+}
