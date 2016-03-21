@@ -27,6 +27,7 @@
     "url": "https://github.com/mpareja/uncorded/issues"
   },
   "dependencies": {
+    "bunyan": "^1.8.0",
     "lodash": "^4.6.1",
     "uuid": "^2.0.1"
   },
