@@ -13,7 +13,7 @@
     "cov": "opener coverage/lcov-report/index.html",
     "cov-check": "istanbul report && istanbul check-coverage",
     "lint": "eslint --ignore-path .gitignore .",
-    "test": "npm run clean && npm run test-cov && npm run lint && npm run cov-check",
+    "test": "npm run clean && npm run lint && npm run test-cov && npm run cov-check",
     "test-cov": "istanbul cover --include-pid _mocha -- --recursive --reporter ${MOCHA_REPORTER:-spec} lib/test api/test",
     "test-only": "mocha --recursive lib/test api/test",
     "watch-test": "mocha --recursive -w lib/test api/test"
@@ -43,6 +43,7 @@
     "opener": "^1.4.1",
     "pre-commit": "^1.1.2",
     "rimraf": "^2.5.2",
+    "sinon": "^1.17.3",
     "supertest": "^1.2.0"
   }
 }
