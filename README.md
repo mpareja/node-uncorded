@@ -42,11 +42,37 @@ In order to make document removal highly available and fast, uncorded does not w
 
 ?
 
-## What's with the name?
+# Usage
+
+Using uncorded requires firing up the API server and creating sets for use within your application.
+
+```
+const uncorded = require('uncorded');
+const server = uncorded.createServer();
+const tokens = server.createSet('tokens');
+
+// ... now start using your replicated set
+const token = tokens.add({ user: 'bob' });
+const found = tokens.get(token.id);
+console.log(found.doc);
+tokens.remove(token.id);
+```
+
+Uncorded will [search for sibling nodes](#cluster-discovery) and connect to their APIs to listen for changes.
+
+## Configuration
+
+**Status: experimental**
+
+The current configuration model is based on [rc](https://www.npmjs.com/package/rc). Configure the `port` that uncorded listens on by setting the `uncorded_port` environment variable.
+
+Uncorded uses [bunyan](https://www.npmjs.com/package/bunyan) for logging and you can configure most elements of logging via environment variables too. Change the log level by setting the `uncorded_log__level` environment variable to `info`, `warn` or `error`.
+
+# What's with the name?
 
 If you were to guess how to pronounce the CRDT abbreviation, you might land at the word "corded". Given the master-master decentralized nature of this beast, the word `uncorded` seemed to make sense.
 
-## License
+# License
 
 The MIT License (MIT)
 Copyright (c) 2016 Mario Pareja
