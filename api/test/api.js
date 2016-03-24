@@ -1,15 +1,14 @@
 'use strict';
 
-const config = require('../config.js');
-const createServer = require('../server.js');
-const log = require('bunyan').createLogger({ name: 'tests', level: 'warn' });
 const supertest = require('supertest');
+const uncorded = require('../../');
 
 describe('API', () => {
-  let server;
+  let db, server;
 
   beforeEach(done => {
-    server = createServer(config, log);
+    db = uncorded.createServer();
+    server = db._server;
     done();
   });
 
