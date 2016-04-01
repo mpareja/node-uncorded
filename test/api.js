@@ -26,60 +26,50 @@ describe('API', () => {
       .end(done);
   });
 
-  it('supports retrieving the current state', done => {
-    const tokens = db.createSet('tokens');
-    const foo = tokens.add({ foo: 'bar' });
+  describe('/sets/{set}', () => {
+    let data, httpStream, splitStream, tokens, foo;
 
-    const httpStream = supertest(server).get('/sets/tokens');
-    const splitStream = split(JSON.parse, null, { trailing: false });
+    before(done => {
+      tokens = db.createSet('tokens');
+      foo = tokens.add({ foo: 'bar' });
 
-    httpStream
-      .pipe(splitStream)
-      .once('data', data => {
-        assert.isObject(data);
-        assert.isObject(data);
+      httpStream = supertest(server).get('/sets/tokens');
+      splitStream = httpStream.pipe(split(JSON.parse, null, { trailing: false }));
 
-        assert.isObject(data);
-        assert.isObject(data.adds);
-        assert.isObject(data.removals);
-        assert.equal(Object.keys(data.adds).length, 1);
-        assert.equal(Object.keys(data.removals).length, 0);
+      splitStream.once('data', d => {
+        data = d;
+        done();
+      });
+    });
 
-        const found = data.adds[foo.id];
-        assert.isObject(found);
-        assert.deepEqual(found.doc, { foo: 'bar' });
+    after(() => {
+      httpStream.abort(); // don't leave request hanging
+    });
 
-        httpStream.abort(); // don't leave request hanging
-      })
-      .on('end', done);
-  });
-
-  it('supports receiving subsequent state changes', done => {
-    let bar, first = true;
-    const tokens = db.createSet('tokens');
-    tokens.add({ foo: 'bar' });
-
-    const httpStream = supertest(server).get('/sets/tokens');
-    const splitStream = split(raw => {
-      if (first) {
-        first = false;
-        bar = tokens.add({ bar: 'baz' });
-        return;
-      }
-
-      const data = JSON.parse(raw);
-      assert.equal(Object.keys(data.adds).length, 2);
+    it('allows retrieval of existing state', () => {
+      assert.isObject(data);
+      assert.isObject(data.adds);
+      assert.isObject(data.removals);
+      assert.equal(Object.keys(data.adds).length, 1);
       assert.equal(Object.keys(data.removals).length, 0);
 
-      const found = data.adds[bar.id];
+      const found = data.adds[foo.id];
       assert.isObject(found);
-      assert.deepEqual(found.doc, { bar: 'baz' });
+      assert.deepEqual(found.doc, { foo: 'bar' });
+    });
 
-      httpStream.abort(); // don't leave request hanging
-    }, null, { trailing: false });
+    it('allows receiving subsequent state changes', done => {
+      const bar = tokens.add({ bar: 'baz' });
 
-    httpStream
-      .pipe(splitStream)
-      .on('end', done);
+      splitStream.once('data', data => {
+        assert.equal(Object.keys(data.adds).length, 2);
+        assert.equal(Object.keys(data.removals).length, 0);
+
+        const found = data.adds[bar.id];
+        assert.isObject(found);
+        assert.deepEqual(found.doc, { bar: 'baz' });
+        done();
+      });
+    });
   });
 });
