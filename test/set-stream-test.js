@@ -1,6 +1,6 @@
 'use strict';
 const assert = require('chai').assert;
-const SetStream = require('../set-stream');
+const SetStream = require('../lib/set-stream');
 const sinon = require('sinon');
 
 describe('set-stream', () => {

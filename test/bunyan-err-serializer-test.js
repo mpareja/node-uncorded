@@ -1,7 +1,7 @@
 'use strict';
 
 const assert = require('chai').assert;
-const serialize = require('../bunyan-err-serializer');
+const serialize = require('../lib/bunyan-err-serializer');
 
 describe('serializer', function () {
   const e = new Error('outer');

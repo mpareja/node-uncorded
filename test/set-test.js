@@ -1,7 +1,7 @@
 'use strict';
 
 const assert = require('chai').assert;
-const Set = require('../set');
+const Set = require('../lib/set');
 
 let i = 0;
 const createDoc = () => {

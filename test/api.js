@@ -3,7 +3,7 @@
 const assert = require('chai').assert;
 const split = require('split');
 const supertest = require('supertest');
-const uncorded = require('../../');
+const uncorded = require('../');
 
 describe('API', () => {
   let db, server;
