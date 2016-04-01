@@ -31,26 +31,26 @@ describe('API', () => {
     const foo = tokens.add({ foo: 'bar' });
 
     const httpStream = supertest(server).get('/sets/tokens');
-    const splitStream = split(raw => {
-      const data = JSON.parse(raw);
-      assert.isObject(data);
-      assert.isObject(data);
-
-      assert.isObject(data);
-      assert.isObject(data.adds);
-      assert.isObject(data.removals);
-      assert.equal(Object.keys(data.adds).length, 1);
-      assert.equal(Object.keys(data.removals).length, 0);
-
-      const found = data.adds[foo.id];
-      assert.isObject(found);
-      assert.deepEqual(found.doc, { foo: 'bar' });
-
-      httpStream.abort(); // don't leave request hanging
-    }, null, { trailing: false });
+    const splitStream = split(JSON.parse, null, { trailing: false });
 
     httpStream
       .pipe(splitStream)
+      .once('data', data => {
+        assert.isObject(data);
+        assert.isObject(data);
+
+        assert.isObject(data);
+        assert.isObject(data.adds);
+        assert.isObject(data.removals);
+        assert.equal(Object.keys(data.adds).length, 1);
+        assert.equal(Object.keys(data.removals).length, 0);
+
+        const found = data.adds[foo.id];
+        assert.isObject(found);
+        assert.deepEqual(found.doc, { foo: 'bar' });
+
+        httpStream.abort(); // don't leave request hanging
+      })
       .on('end', done);
   });
 
