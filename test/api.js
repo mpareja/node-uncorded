@@ -72,6 +72,61 @@ describe('API', () => {
           done();
         });
       });
+
+      describe('when a second listener joins', () => {
+        it('existing state is sent immediately', done => {
+          const http = supertest(server).get('/sets/tokens');
+          const stream = http.pipe(split(JSON.parse, null, { trailing: false }));
+
+          stream.once('data', data => {
+            http.abort(); // don't leave request hanging
+
+            assert.equal(Object.keys(data.adds).length, 2);
+            assert.equal(Object.keys(data.removals).length, 0);
+            done();
+          });
+        });
+
+        it('existing state is only sent once', done => {
+          tokens.add({ ping: 'pong' });
+
+          const http = supertest(server).get('/sets/tokens');
+          const stream = http.pipe(split(JSON.parse, null, { trailing: false }));
+
+          const states = [];
+          stream.on('data', states.push.bind(states));
+          stream.on('end', () => {
+            assert.equal(states.length, 1);
+            done();
+          });
+
+          // indicate set-stream is done producing events
+          // (ping-pong above is already pushed on buffer)
+          tokens.push(null);
+        });
+      });
+    });
+
+    describe('a set already containing multiple values', () => {
+      it('only sends existing state once', done => {
+        const things = db.createSet('things');
+        things.add({ ping: 'pong' });
+        things.add({ lat: 'long' });
+
+        const http = supertest(server).get('/sets/things');
+        const stream = http.pipe(split(JSON.parse, null, { trailing: false }));
+
+        const states = [];
+        stream.on('data', states.push.bind(states));
+        stream.on('end', () => {
+          assert.equal(states.length, 1);
+          done();
+        });
+
+        // indicate set-stream is done producing events
+        // (ping-pong above is already pushed on buffer)
+        things.push(null);
+      });
     });
   });
 });
