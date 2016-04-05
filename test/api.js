@@ -27,48 +27,50 @@ describe('API', () => {
   });
 
   describe('/sets/{set}', () => {
-    let data, httpStream, splitStream, tokens, foo;
+    describe('a set already containing a value', () => {
+      let data, httpStream, splitStream, tokens, foo;
 
-    before(done => {
-      tokens = db.createSet('tokens');
-      foo = tokens.add({ foo: 'bar' });
+      before(done => {
+        tokens = db.createSet('tokens');
+        foo = tokens.add({ foo: 'bar' });
 
-      httpStream = supertest(server).get('/sets/tokens');
-      splitStream = httpStream.pipe(split(JSON.parse, null, { trailing: false }));
+        httpStream = supertest(server).get('/sets/tokens');
+        splitStream = httpStream.pipe(split(JSON.parse, null, { trailing: false }));
 
-      splitStream.once('data', d => {
-        data = d;
-        done();
+        splitStream.once('data', d => {
+          data = d;
+          done();
+        });
       });
-    });
 
-    after(() => {
-      httpStream.abort(); // don't leave request hanging
-    });
+      after(() => {
+        httpStream.abort(); // don't leave request hanging
+      });
 
-    it('allows retrieval of existing state', () => {
-      assert.isObject(data);
-      assert.isObject(data.adds);
-      assert.isObject(data.removals);
-      assert.equal(Object.keys(data.adds).length, 1);
-      assert.equal(Object.keys(data.removals).length, 0);
-
-      const found = data.adds[foo.id];
-      assert.isObject(found);
-      assert.deepEqual(found.doc, { foo: 'bar' });
-    });
-
-    it('allows receiving subsequent state changes', done => {
-      const bar = tokens.add({ bar: 'baz' });
-
-      splitStream.once('data', data => {
-        assert.equal(Object.keys(data.adds).length, 2);
+      it('allows retrieval of existing state', () => {
+        assert.isObject(data);
+        assert.isObject(data.adds);
+        assert.isObject(data.removals);
+        assert.equal(Object.keys(data.adds).length, 1);
         assert.equal(Object.keys(data.removals).length, 0);
 
-        const found = data.adds[bar.id];
+        const found = data.adds[foo.id];
         assert.isObject(found);
-        assert.deepEqual(found.doc, { bar: 'baz' });
-        done();
+        assert.deepEqual(found.doc, { foo: 'bar' });
+      });
+
+      it('allows receiving subsequent state changes', done => {
+        const bar = tokens.add({ bar: 'baz' });
+
+        splitStream.once('data', data => {
+          assert.equal(Object.keys(data.adds).length, 2);
+          assert.equal(Object.keys(data.removals).length, 0);
+
+          const found = data.adds[bar.id];
+          assert.isObject(found);
+          assert.deepEqual(found.doc, { bar: 'baz' });
+          done();
+        });
       });
     });
   });
