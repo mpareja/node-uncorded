@@ -2,14 +2,25 @@
 const through = require('through');
 
 module.exports = (sets) => (req, res, next) => {
-  const set = sets[req.params.id];
-  const stringify = through(function (data) {
-    this.queue(JSON.stringify(data) + '\n');
-  });
+  const ids = req.params.ids.split(',');
 
   // send pre-existing state
-  res.write(JSON.stringify(set.state()) + '\n');
+  const existing = ids.reduce((current, id) => {
+    current[id] = sets[id].state();
+    return current;
+  }, {});
+  res.write(JSON.stringify(existing) + '\r\n');
 
-  set.pipe(stringify).pipe(res);
+  // pipe subsequent state changes
+  ids.forEach(id => {
+    const set = sets[id];
+    const stringify = through(function (state) {
+      const data = {};
+      data[id] = state;
+      this.queue(JSON.stringify(data) + '\r\n');
+    });
+    set.pipe(stringify).pipe(res);
+  });
+
   next();
 };

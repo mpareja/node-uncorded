@@ -38,7 +38,7 @@ describe('API', () => {
         splitStream = httpStream.pipe(split(JSON.parse, null, { trailing: false }));
 
         splitStream.once('data', d => {
-          data = d;
+          data = d.tokens;
           done();
         });
       });
@@ -63,10 +63,10 @@ describe('API', () => {
         const bar = tokens.add({ bar: 'baz' });
 
         splitStream.once('data', data => {
-          assert.equal(Object.keys(data.adds).length, 2);
-          assert.equal(Object.keys(data.removals).length, 0);
+          assert.equal(Object.keys(data.tokens.adds).length, 2);
+          assert.equal(Object.keys(data.tokens.removals).length, 0);
 
-          const found = data.adds[bar.id];
+          const found = data.tokens.adds[bar.id];
           assert.isObject(found);
           assert.deepEqual(found.doc, { bar: 'baz' });
           done();
@@ -81,8 +81,8 @@ describe('API', () => {
           stream.once('data', data => {
             http.abort(); // don't leave request hanging
 
-            assert.equal(Object.keys(data.adds).length, 2);
-            assert.equal(Object.keys(data.removals).length, 0);
+            assert.equal(Object.keys(data.tokens.adds).length, 2);
+            assert.equal(Object.keys(data.tokens.removals).length, 0);
             done();
           });
         });
@@ -127,6 +127,88 @@ describe('API', () => {
         // (ping-pong above is already pushed on buffer)
         things.push(null);
       });
+    });
+  });
+
+  describe('/sets/{a,b,...}', () => {
+    describe('given a server with multiple sets', () => {
+      let a, b, c;
+
+      before(() => {
+        a = db.createSet('a');
+        b = db.createSet('b');
+        c = db.createSet('c');
+        a.add({ a1: 'a1' });
+        b.add({ b1: 'b1' });
+        c.add({ c1: 'c1' });
+      });
+
+      it('allows retrieval of existing states', done => {
+        const httpStream = supertest(server).get('/sets/a,b');
+        const splitStream = httpStream.pipe(split(JSON.parse, null, { trailing: false }));
+
+        splitStream.once('data', data => {
+          httpStream.abort(); // don't leave request hanging
+
+          assert.isObject(data.a);
+          assert.isObject(data.b);
+          done();
+        });
+      });
+
+      it('allows receiving subsequent state changes to multiple sets', done => {
+        const httpStream = supertest(server).get('/sets/a,b');
+        const splitStream = httpStream.pipe(split(JSON.parse, null, { trailing: false }));
+
+        splitStream.once('data', () => {
+          const a2 = a.add({ a2: 'a2' });
+          splitStream.once('data', data => {
+            assert.deepEqual(data.a.adds[a2.id], a2);
+
+            const b2 = b.add({ b2: 'b2' });
+            splitStream.once('data', data => {
+              httpStream.abort(); // don't leave request hanging
+
+              assert.deepEqual(data.b.adds[b2.id], b2);
+              done();
+            });
+          });
+        });
+      });
+
+      it('does not send existing state for unrequested sets', done => {
+        const httpStream = supertest(server).get('/sets/a,b');
+        const splitStream = httpStream.pipe(split(JSON.parse, null, { trailing: false }));
+
+        splitStream.once('data', data => {
+          httpStream.abort(); // don't leave request hanging
+
+          assert.isUndefined(data.c);
+          done();
+        });
+      });
+
+      it('does not send subseuent state changes for unrequested sets', done => {
+        const httpStream = supertest(server).get('/sets/a,b');
+        const splitStream = httpStream.pipe(split(JSON.parse, null, { trailing: false }));
+
+        splitStream.once('data', () => {
+          // make a change to `a` in addition to `c`
+          // so we can monitor `data` events and know that
+          // `c` failed to elicit a change without having to
+          // wait for some timeout period
+          c.add({ c2: 'c2' });
+          a.add({ a3: 'a3' });
+          splitStream.once('data', data => {
+            httpStream.abort(); // don't leave request hanging
+
+            assert.isUndefined(data.c);
+            done();
+          });
+        });
+      });
+
+      it('ignores sets not used by server');
     });
   });
 });
