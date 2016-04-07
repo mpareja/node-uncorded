@@ -68,6 +68,10 @@ The current configuration model is based on [rc](https://www.npmjs.com/package/r
 
 Uncorded uses [bunyan](https://www.npmjs.com/package/bunyan) for logging and you can configure most elements of logging via environment variables too. Change the log level by setting the `uncorded_log__level` environment variable to `info`, `warn` or `error`.
 
+## Security Considerations
+
+Uncorded assumes the network is secure.
+
 # What's with the name?
 
 If you were to guess how to pronounce the CRDT abbreviation, you might land at the word "corded". Given the master-master decentralized nature of this beast, the word `uncorded` seemed to make sense.
