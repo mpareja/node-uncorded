@@ -80,7 +80,7 @@ Each uncorded node exposes an HTTP server with the following routes.
 
 Each set maintained by an uncorded node is exposed via an HTTP endpoint. Siblings in a cluster can listen for changes to a set's state by establishing a connection and waiting for newline-delimited (CRLF) JSON objects to appear.
 
-    GET /sets/{set_name}
+    GET /sets/{set_names}
 
 #### Request
 
