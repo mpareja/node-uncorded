@@ -70,7 +70,50 @@ Uncorded uses [bunyan](https://www.npmjs.com/package/bunyan) for logging and you
 
 ## Security Considerations
 
-Uncorded assumes the network is secure.
+Uncorded assumes [the network is secure](https://en.wikipedia.org/wiki/Fallacies_of_distributed_computing#The_fallacies).
+
+# API
+
+Each uncorded node exposes an HTTP server with the following routes.
+
+### 2P-Set State Stream
+
+Each set maintained by an uncorded node is exposed via an HTTP endpoint. Siblings in a cluster can listen for changes to a set's state by establishing a connection and waiting for newline-delimited (CRLF) JSON objects to appear.
+
+    GET /sets/{set_names}
+
+#### Request
+
+Clients are able to request the state stream for an individual set or multiple sets. Provide a comma delimited list of set names to receive changes for multiple sets:
+
+    GET /sets/tokens,keys,foos
+
+#### Response
+
+Responses are JSON objects with the root keys corresponding to set names. The initial response will contain the state of all requested sets. Streaming updates will only include state for the sets that have changed.
+
+```json
+// formatted for your viewing pleasure, normally it is unformatted on one line
+{
+  "tokens": {
+    "adds": {
+      "d8b0a6fd-d0f5-4390-be87-37d8c91d62ea": {
+        "id": "d8b0a6fd-d0f5-4390-be87-37d8c91d62ea",
+        "doc": { "foo": "bar" }
+      }
+    },
+    "removals": {}
+  },
+  "keys": {
+    "adds": {},
+    "removals": {}
+  },
+  "foos": {
+    "adds": {},
+    "removals": {}
+  }
+}
+```
 
 # What's with the name?
 

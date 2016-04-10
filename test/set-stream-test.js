@@ -78,6 +78,13 @@ describe('set-stream', () => {
     ss.write(upstream);
     ss.end();
   });
+
+  it('exposes state', () => {
+    const state = ss.state();
+    assert.isObject(state);
+    assert.deepEqual(state.adds, ss._set.adds);
+    assert.deepEqual(state.removals, ss._set.removals);
+  });
 });
 
 describe('set-stream - full-circle', () => {
