@@ -226,7 +226,26 @@ describe('API', () => {
         });
       });
 
-      it('ignores sets not used by server');
+      // Until we resolve https://github.com/mpareja/node-uncorded/issues/10,
+      // ignoring missing sets is safest so long as all uncorded nodes in cluster
+      // call `createSet` on the same tick as `createServer`. If a new node requires
+      // a new set but connects to an old node, the new node won't receive old node updates
+      // for the new set - that's okay since the old node doesn't know about the new set
+      // anyway. Later, when the old node is upgraded, the new node's replication
+      // connection with the upgraded node will break and a reconnect is expected. On
+      // reconnect, the upgraded node should have the new set and everything should
+      // work out.
+      it('ignores requests for missing sets', done => {
+        const httpStream = supertest(server).get('/sets/a,b,unknown');
+        const splitStream = httpStream.pipe(split(JSON.parse, null, { trailing: false }));
+
+        splitStream.once('data', data => {
+          httpStream.abort(); // don't leave request hanging
+
+          assert.isUndefined(data.unknown);
+          done();
+        });
+      });
     });
   });
 });
