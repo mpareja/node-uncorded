@@ -28,6 +28,7 @@
   },
   "dependencies": {
     "bunyan": "^1.8.0",
+    "debug": "^2.2.0",
     "lodash": "^4.6.1",
     "rc": "^1.1.6",
     "restify": "^4.0.4",
