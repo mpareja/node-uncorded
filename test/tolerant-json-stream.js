@@ -4,7 +4,7 @@ const config = require('../api/config.js');
 const http = require('http');
 const createRetryJsonStream = require('../lib/tolerant-json-stream.js');
 
-describe('node-connection', () => {
+describe('tolerant-json-stream', () => {
 
   describe('when connected to another node', () => {
     let response, server, stream;
