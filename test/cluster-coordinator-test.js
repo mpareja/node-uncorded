@@ -16,7 +16,7 @@ class StubSetStream extends stream.Writable {
 }
 
 describe('cluster-coordinator', () => {
-  describe('adding a node to the cluster', () => {
+  describe('adding a peer to the cluster', () => {
     let stubCreateStream, stubStream, coordinator, log, sets;
 
     beforeEach(() => {
@@ -28,11 +28,11 @@ describe('cluster-coordinator', () => {
       coordinator.register('http://foo');
     });
 
-    it('establishes a connection with the new node', () => {
+    it('establishes a connection with the new peer', () => {
       sinon.assert.calledWith(stubCreateStream, 'http://foo/sets/a,b');
     });
 
-    it('applies changes from the node to the correct set streams', () => {
+    it('applies changes from the peer to the correct set streams', () => {
       // emit change to a
       const changeA = 'A';
       stubStream.emit('data', { a: changeA });
@@ -51,7 +51,7 @@ describe('cluster-coordinator', () => {
       assert.equal(sets.b.chunks[0], changeB);
     });
 
-    it('logs successful connection to the node', () => {
+    it('logs successful connection to the peer', () => {
       sinon.assert.notCalled(log.info);
 
       stubStream.emit('connect');
