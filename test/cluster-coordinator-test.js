@@ -71,8 +71,53 @@ describe('cluster-coordinator', () => {
     });
   });
 
-  describe('removing a node from the cluster', () => {
-    it('stops the connection with the new node');
-    it('stop applying changes to set streams');
+  describe('removing a peer from the cluster', () => {
+    let stubCreateStream, stubStream, coordinator, log, sets, url;
+
+    beforeEach(() => {
+      url = 'http://foo';
+      sets = { a: new StubSetStream(), b: new StubSetStream() };
+      log = { info: sinon.spy(), warn: sinon.spy() };
+      stubStream = new stream.Readable();
+      stubStream.stop = sinon.spy();
+      stubCreateStream = sinon.mock().returns(stubStream);
+      coordinator = createCoordinator(log, stubCreateStream, sets);
+      coordinator.register('http://foo');
+    });
+
+    it('stops the connection with the new peer', () => {
+      coordinator.unregister(url);
+      sinon.assert.calledOnce(stubStream.stop);
+    });
+
+    it('logs error if peer is not registered', () => {
+      coordinator.unregister(url);
+      try {
+        coordinator.unregister(url);
+      } catch (err) {
+        assert.instanceOf(err, Error);
+        assert.equal(err.message, 'peer not found');
+        assert.equal(err.url, url);
+        return;
+      }
+      assert.fail('expected error to be thrown');
+    });
+
+    it('disconnects listeners from the peer', () => {
+      coordinator.unregister(url);
+      assert.equal(stubStream.listenerCount('connect'), 0);
+      assert.equal(stubStream.listenerCount('connectionError'), 0);
+      assert.equal(stubStream.listenerCount('data'), 0);
+    });
+
+    it('stops applying changes to the set stream', () => {
+      coordinator.unregister(url);
+
+      // emit change to a
+      const changeA = 'A';
+      stubStream.emit('data', { a: changeA });
+      
+      assert.equal(sets.a.chunks.length, 0);
+    });
   });
 });
