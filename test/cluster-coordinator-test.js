@@ -25,16 +25,14 @@ describe('cluster-coordinator', () => {
       stubStream = new stream.Readable();
       stubCreateStream = sinon.mock().returns(stubStream);
       coordinator = createCoordinator(log, stubCreateStream, sets);
+      coordinator.register('http://foo');
     });
 
     it('establishes a connection with the new node', () => {
-      coordinator.register('http://foo');
       sinon.assert.calledWith(stubCreateStream, 'http://foo/sets/a,b');
     });
 
     it('applies changes from the node to the correct set streams', () => {
-      coordinator.register('http://foo');
-
       // emit change to a
       const changeA = 'A';
       stubStream.emit('data', { a: changeA });
@@ -54,7 +52,6 @@ describe('cluster-coordinator', () => {
     });
 
     it('logs successful connection to the node', () => {
-      coordinator.register('http://foo');
       sinon.assert.notCalled(log.info);
 
       stubStream.emit('connect');
@@ -64,7 +61,6 @@ describe('cluster-coordinator', () => {
     });
 
     it('logs connection failures', () => {
-      coordinator.register('http://foo');
       sinon.assert.notCalled(log.warn);
 
       const err = new Error('BOGUS');
