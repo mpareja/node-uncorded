@@ -72,10 +72,10 @@ describe('tolerant-json-stream', () => {
       });
 
       it('emits connectionError event', done => {
-        response.end();
+        response.destroy();
         stream.once('connectionError', err => {
           assert.instanceOf(err, Error);
-          assert.equal(err.message, 'server ended request');
+          assert.equal(err.message, 'socket hang up');
           done();
         });
       });
