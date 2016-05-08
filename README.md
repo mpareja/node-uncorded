@@ -21,10 +21,6 @@ A state-based CRDT was chosen over an operation-based CRDT so we could forego th
 
 Nodes publish changes to listeners via newline delimited JSON representations of their state. Listeners apply the state changes according to the [2P-set](https://en.wikipedia.org/wiki/Conflict-free_replicated_data_type#State-based_2P-set) merge algorithm.
 
-## Cluster Discovery
-
-Cluster discovery is accomplished by periodically querying AWS ELBs for healthy nodes. We'll start with polling every 5 seconds and see where we go from there. Ideally, cluster discovery becomes pluggable.
-
 ## Fault Model
 
 ### Adding a document
@@ -48,7 +44,12 @@ Using uncorded requires firing up the API server and creating sets for use withi
 
 ```
 const uncorded = require('uncorded');
-const server = uncorded.createServer();
+const server = uncorded.createServer({
+  discovery: uncorded.discovery.elb({
+    region: 'us-east-1',
+    elbName: 'uncorded-test-elb'
+  })
+});
 const tokens = server.createSet('tokens');
 
 // ... now start using your replicated set
@@ -58,7 +59,30 @@ console.log(found.doc);
 tokens.remove(token.id);
 ```
 
-Uncorded will [search for sibling nodes](#cluster-discovery) and connect to their APIs to listen for changes.
+## Options
+
+#### `log`
+
+An instance of a [`bunyan`](https://github.com/trentm/node-bunyan) logger or an API compatible alternative.
+
+#### `discovery`
+
+An implementation of the [cluster discovery](#cluster-discovery) interface like the ELB cluster discovery module. If the `discovery` options is not specified, uncorded will warn and disable cluster discovery.
+
+## Cluster Discovery
+
+Uncorded supports pluggable cluster discovery. Discovery modules must be EventEmitters that appropriately produce `peer-added` and `peer-removed` events containing peer URLs.
+
+### Cluster Discovery: ELB
+
+Uncorded comes built-in with a module for discovering peers based on healthy instances registered with an AWS Elastic Load Balancer. Cluster discovery is accomplished by periodically querying AWS ELBs for healthy nodes. We'll start with polling every 5 seconds and see where we go from there. Option fields include:
+
+  + `region`: the AWS region where the ELB and EC2 instances reside. (i.e. `us-east-1`)
+  + `elbName`: the name of the Elastic Load Balancers the instances are registered with. (i.e. `uncorded-elb`)
+  + `interval`: the period of time to delay between polling for healthy nodes.
+
+
+In the future, this discovery module may automatically detect the `region` and `elbName` based on the instance uncorded is running from.
 
 ## Configuration
 
