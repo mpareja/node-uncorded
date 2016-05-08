@@ -124,4 +124,22 @@ describe('cluster-discovery-elb', () => {
       });
     });
   });
+
+  it('respects interval option when polling for cluster updates', done => {
+    const listStub = sinon.stub().yieldsAsync(null, []);
+    const options = {
+      region: 'us-east-1',
+      elbName: 'bogus-test-elb',
+      interval: 30,
+      list: listStub
+    };
+    startClusterDiscovery(options);
+    setTimeout(() => {
+      sinon.assert.calledOnce(listStub);
+      setTimeout(() => {
+        sinon.assert.calledTwice(listStub);
+        done();
+      }, 20);
+    }, 20);
+  });
 });
