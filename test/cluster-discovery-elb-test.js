@@ -12,7 +12,7 @@ describe('cluster-discovery-elb', () => {
       const options = {
         region: 'us-east-1',
         elbName: 'bogus-test-elb',
-        listElbHealthInstances: listStub,
+        list: listStub,
         schedule: scheduleStub
       };
       clusterDiscovery = startClusterDiscovery(options);
@@ -98,7 +98,7 @@ describe('cluster-discovery-elb', () => {
       const options = {
         region: 'us-east-1',
         elbName: 'bogus-test-elb',
-        listElbHealthInstances: listStub,
+        list: listStub,
         schedule: scheduleStub
       };
       clusterDiscovery = startClusterDiscovery(options);
