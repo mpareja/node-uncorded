@@ -17,3 +17,6 @@ exports.createServer = () => {
     _server: server
   };
 };
+exports.discovery = {
+  elb: require('./lib/cluster-discovery-elb')
+};

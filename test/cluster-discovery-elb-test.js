@@ -2,6 +2,7 @@
 const assert = require('chai').assert;
 const sinon = require('sinon');
 const startClusterDiscovery = require('../lib/cluster-discovery-elb');
+const uncorded = require('../');
 
 describe('cluster-discovery-elb', () => {
   describe('successfully initializing cluster discovery', () => {
@@ -141,5 +142,9 @@ describe('cluster-discovery-elb', () => {
         done();
       }, 20);
     }, 20);
+  });
+
+  it('uncorded exports ELB cluster discovery module', () => {
+    assert.equal(uncorded.discovery.elb, startClusterDiscovery);
   });
 });
