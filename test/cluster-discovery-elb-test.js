@@ -108,6 +108,8 @@ describe('cluster-discovery-elb', () => {
       clusterDiscovery.on('error', err => {
         assert.instanceOf(err, Error);
         assert.equal(err.message, 'bogus');
+        assert.equal(err.region, 'us-east-1');
+        assert.equal(err.elbName, 'bogus-test-elb');
         done();
       });
     });
