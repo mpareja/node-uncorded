@@ -30,6 +30,26 @@ describe('list-elb-healthy-instances', () => {
     });
   });
 
+  describe('successfully retrieves no healthy IP addresses', () => {
+    beforeEach(done => {
+      const response = getElbResponse();
+      response.InstanceStates[1].State = 'OutOfService';
+      stubDescribeInstanceHealth = sinon.stub().yieldsAsync(null, response);
+      stubDescribeInstances = sinon.stub().yieldsAsync(null, getEc2Response());
+      go(done);
+    });
+
+    it('returns no error', () => assert.isNull(err));
+
+    it('returns no InService instance IP addresses', () => {
+      assert.deepEqual(peers, []);
+    });
+
+    it('does not spend time trying to describe any instances', () => {
+      sinon.assert.notCalled(stubDescribeInstances);
+    });
+  });
+
   describe('unsuccessfully retrieving a list of instances from elb', () => {
     beforeEach(done => {
       stubDescribeInstanceHealth = sinon.stub().yieldsAsync(new Error('Bogus'));
