@@ -4,7 +4,7 @@ const bunyan = require('bunyan');
 const serializer = require('../lib/bunyan-err-serializer');
 
 module.exports = require('rc')('uncorded', {
-  port: 8080,
+  port: 8199,
   discovery: {
     interval: 5000
   },

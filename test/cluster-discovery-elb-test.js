@@ -25,9 +25,9 @@ describe('cluster-discovery-elb', () => {
 
     it('publishes peer-added messages for each healthy IP', done => {
       clusterDiscovery.once('peer-added', peer => {
-        assert.equal(peer, '10.1.1.1');
+        assert.equal(peer, 'http://10.1.1.1:8199');
         clusterDiscovery.once('peer-added', peer => {
-          assert.equal(peer, '10.2.2.2');
+          assert.equal(peer, 'http://10.2.2.2:8199');
           done();
         });
       });
@@ -74,12 +74,12 @@ describe('cluster-discovery-elb', () => {
         // stub the next call for healthy IPs to only return one
         listStub.yieldsAsync(null, [ '10.2.2.2' ]);
         clusterDiscovery.once('peer-removed', peer => {
-          assert.equal(peer, '10.1.1.1');
+          assert.equal(peer, 'http://10.1.1.1:8199');
 
           // stub the next call for healthy IPs to only return one
           listStub.yieldsAsync(null, []);
           clusterDiscovery.once('peer-removed', peer => {
-            assert.equal(peer, '10.2.2.2');
+            assert.equal(peer, 'http://10.2.2.2:8199');
             done();
           });
 
@@ -142,6 +142,23 @@ describe('cluster-discovery-elb', () => {
         done();
       }, 20);
     }, 20);
+  });
+
+  it('respects `port` option when generating URLs', done => {
+    const listStub = sinon.stub().yieldsAsync(null, [ '10.1.1.1' ]);
+    const scheduleStub = sinon.stub();
+    const options = {
+      region: 'us-east-1',
+      elbName: 'bogus-test-elb',
+      port: 666,
+      list: listStub,
+      schedule: scheduleStub
+    };
+    const discovery = startClusterDiscovery(options);
+    discovery.once('peer-added', peer => {
+      assert.equal(peer, 'http://10.1.1.1:666');
+      done();
+    });
   });
 
   it('uncorded exports ELB cluster discovery module', () => {

@@ -80,7 +80,7 @@ Uncorded comes built-in with a module for discovering peers based on healthy ins
   + `region`: the AWS region where the ELB and EC2 instances reside. (i.e. `us-east-1`)
   + `elbName`: the name of the Elastic Load Balancers the instances are registered with. (i.e. `uncorded-elb`)
   + `interval`: the period of time to delay between polling for healthy nodes.
-
+  + `port`: the port to connect to peers on - must match `port` passed into `createServer`.
 
 In the future, this discovery module may automatically detect the `region` and `elbName` based on the instance uncorded is running from.
 
