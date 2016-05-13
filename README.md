@@ -75,7 +75,7 @@ Uncorded supports pluggable cluster discovery. Discovery modules must be EventEm
 
 ### Cluster Discovery: ELB
 
-Uncorded comes built-in with a module for discovering peers based on healthy instances registered with an AWS Elastic Load Balancer. Cluster discovery is accomplished by periodically querying AWS ELBs for healthy nodes. We'll start with polling every 5 seconds and see where we go from there. Option fields include:
+Uncorded comes built-in with a module for discovering peers based on healthy instances registered with an AWS Elastic Load Balancer. Cluster discovery is accomplished by periodically [querying AWS ELBs for healthy nodes](http://docs.aws.amazon.com/ElasticLoadBalancing/latest/APIReference/API_DescribeInstanceHealth.html) and [resolving their IP addresses](http://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_DescribeInstances.html). We'll start with polling every 5 seconds and see where we go from there. Option fields include:
 
   + `region`: the AWS region where the ELB and EC2 instances reside. (i.e. `us-east-1`)
   + `elbName`: the name of the Elastic Load Balancers the instances are registered with. (i.e. `uncorded-elb`)
