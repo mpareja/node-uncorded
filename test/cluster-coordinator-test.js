@@ -120,4 +120,20 @@ describe('cluster-coordinator', () => {
       assert.equal(sets.a.chunks.length, 0);
     });
   });
+
+  describe('adding a set after creating the coordinator', () => {
+    it('includes the new set when registering new nodes', () => {
+      const sets = { a: new StubSetStream() };
+      const log = { info: sinon.spy(), warn: sinon.spy() };
+      const stubStream = new stream.Readable();
+      const stubCreateStream = sinon.mock().returns(stubStream);
+      const coordinator = createCoordinator(log, stubCreateStream, sets);
+
+      sets.b = new StubSetStream();
+      coordinator.register('http://foo');
+      sinon.assert.calledWith(stubCreateStream, 'http://foo/sets/a,b');
+    });
+
+    it('reconnects to existing nodes to receive updates for the new set');
+  });
 });
