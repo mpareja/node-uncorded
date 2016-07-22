@@ -85,7 +85,7 @@ describe('tolerant-json-stream', () => {
       it('emits connectionError event', done => {
         response.end();
         server.close();
-        server.close = (cb) => cb(); // stub so beforeEach doesn't break
+        server.close = (cb) => cb(); // stub so afterEach doesn't break
 
         stream.once('connectionError', err => {
           assert.instanceOf(err, Error);
@@ -97,7 +97,7 @@ describe('tolerant-json-stream', () => {
       it('emits connectionError for subsequent reconnection failure', done => {
         response.end();
         server.close();
-        server.close = (cb) => cb(); // stub so beforeEach doesn't break
+        server.close = (cb) => cb(); // stub so afterEach doesn't break
 
         stream.once('connectionError', () => {
           stream.once('connectionError', err => {
