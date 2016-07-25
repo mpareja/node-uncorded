@@ -28,6 +28,11 @@ describe('cluster-coordinator', () => {
       coordinator.register('http://foo');
     });
 
+    it('logs that the peer was found', () => {
+      const expected = { url: 'http://foo/sets/a,b' };
+      sinon.assert.calledWith(log.info, sinon.match(expected), 'peer registered');
+    });
+
     it('establishes a connection with the new peer', () => {
       sinon.assert.calledWith(stubCreateStream, 'http://foo/sets/a,b');
     });
@@ -52,8 +57,6 @@ describe('cluster-coordinator', () => {
     });
 
     it('logs successful connection to the peer', () => {
-      sinon.assert.notCalled(log.info);
-
       stubStream.emit('connect');
 
       const expected = { url: 'http://foo/sets/a,b' };
@@ -83,6 +86,13 @@ describe('cluster-coordinator', () => {
       stubCreateStream = sinon.mock().returns(stubStream);
       coordinator = createCoordinator(log, stubCreateStream, sets);
       coordinator.register('http://foo');
+    });
+
+    it('logs that the peer was removed', () => {
+      coordinator.unregister(url);
+
+      const expected = { url: 'http://foo' };
+      sinon.assert.calledWith(log.info, sinon.match(expected), 'peer unregistered');
     });
 
     it('stops the connection with the new peer', () => {
