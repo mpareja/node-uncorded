@@ -62,33 +62,48 @@ describe('cluster-discovery-elb', () => {
       });
     });
 
-    describe('removing an instance from the cluster ELB', () => {
-      // HERE: going to invoke the discover function (emulating timeout complete)
-      // and setup listStub to return one less IP address
-      it('publishes peer-removed messages', done => {
-        // we will invoke the discover function to pretend that
-        // the scheduler decided it was time to trigger
-        // the next round of polling
-        const discover = scheduleStub.getCall(0).args[0];
+    describe('adding an instance to the cluster ELB', () => {
+      it('publishes the new instance', done => {
+        listStub.yieldsAsync(null, [ '10.1.1.1', '10.2.2.2', '10.3.3.3' ]);
+        clusterDiscovery.once('peer-added', peer => {
+          assert.equal(peer, 'http://10.3.3.3:8199');
 
+          clusterDiscovery.once('peer-added', () => {
+            done(new Error('should not call peer-added again'));
+          });
+
+          done();
+        });
+
+        setImmediate(triggerDiscovery);
+      });
+    });
+
+    describe('removing an instance from the cluster ELB', () => {
+      it('publishes peer-removed messages', done => {
         // stub the next call for healthy IPs to only return one
         listStub.yieldsAsync(null, [ '10.2.2.2' ]);
         clusterDiscovery.once('peer-removed', peer => {
           assert.equal(peer, 'http://10.1.1.1:8199');
 
-          // stub the next call for healthy IPs to only return one
-          listStub.yieldsAsync(null, []);
-          clusterDiscovery.once('peer-removed', peer => {
-            assert.equal(peer, 'http://10.2.2.2:8199');
-            done();
+          clusterDiscovery.once('peer-removed', () => {
+            done(new Error('should not call peer-removed again'));
           });
 
-          discover();
+          done();
         });
 
-        setImmediate(discover);
+        // we will invoke the discover function to pretend that
+        // the scheduler decided it was time to trigger
+        // the next round of polling
+        setImmediate(triggerDiscovery);
       });
     });
+
+    function triggerDiscovery() {
+      const discover = scheduleStub.getCall(0).args[0];
+      discover();
+    }
   });
 
   describe('unsuccessfully initializing cluster discovery', () => {

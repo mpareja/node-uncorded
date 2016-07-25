@@ -85,7 +85,7 @@ describe('tolerant-json-stream', () => {
       it('emits connectionError event', done => {
         response.end();
         server.close();
-        server.close = (cb) => cb(); // stub so beforeEach doesn't break
+        server.close = (cb) => cb(); // stub so afterEach doesn't break
 
         stream.once('connectionError', err => {
           assert.instanceOf(err, Error);
@@ -97,7 +97,7 @@ describe('tolerant-json-stream', () => {
       it('emits connectionError for subsequent reconnection failure', done => {
         response.end();
         server.close();
-        server.close = (cb) => cb(); // stub so beforeEach doesn't break
+        server.close = (cb) => cb(); // stub so afterEach doesn't break
 
         stream.once('connectionError', () => {
           stream.once('connectionError', err => {
@@ -108,12 +108,64 @@ describe('tolerant-json-stream', () => {
         });
       });
 
-      it('reconnection attempts back off');
+      it('reconnection attempts back off and delay is reset on connection established', done => {
+        // "break" server
+        response.end();
+        server.close();
+
+        let errors = 0;
+        stream.on('connectionError', () => errors++);
+
+        // "fix" server after 200ms
+        setTimeout(() => {
+          server.listen(config.port, () => {
+
+            // once connection re-established...
+            server.once('request', (req, res) => {
+              response = res;
+
+              // ensure back off limited the number of attempts
+              assert.equal(errors, 6);
+
+              // reset errors so we can count next batch
+              errors = 0;
+
+              // ... "break" server again
+              response.end();
+              server.close();
+              server.close = (cb) => cb(); // stub so afterEach doesn't break
+
+              setTimeout(() => {
+                // should be same as first batch, i.e. backoff delay was reset
+                assert.equal(errors, 6);
+                done();
+              }, 200);
+            });
+          });
+        }, 200);
+      });
+    });
+
+    describe('when the connection is stopped between errors', () => {
+      it('should stop trying to reconnect', done => {
+        // "break" server
+        response.end();
+        server.close();
+        server.close = (cb) => cb(); // stub so afterEach doesn't break
+
+        stream.once('connectionError', () => {
+          stream.stop();
+          stream.once('connectionError', () => {
+            assert.fail('should not have tried to reconnect');
+          });
+
+          setTimeout(done, 50);
+        });
+      });
     });
 
     describe('when the server is slow to respond', () => {
       it('should timeout request and try again');
-      it('should backoff on retries on timeouts');
     });
 
     function testReconnect(terminate, done) {
