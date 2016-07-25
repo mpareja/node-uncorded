@@ -37,5 +37,6 @@ exports.createServer = (options) => {
   };
 };
 exports.discovery = {
-  elb: require('./lib/cluster-discovery-elb')
+  elb: require('./lib/cluster-discovery-elb'),
+  static: require('./lib/cluster-discovery-static')
 };
