@@ -18,8 +18,7 @@ module.exports = (sets) => (req, res, next) => {
   }, {});
   res.write(JSON.stringify(existing) + '\r\n');
 
-  // pipe subsequent state changes
-  ids.forEach(id => {
+  const streams = ids.map(id => {
     const set = sets[id];
     const stringify = through(function (state) {
       const data = {};
@@ -27,7 +26,21 @@ module.exports = (sets) => (req, res, next) => {
       this.queue(JSON.stringify(data) + '\r\n');
     });
     set.pipe(stringify).pipe(res);
+
+    return stringify;
   });
+
+  res.on('close', cleanup);
+  res.on('error', cleanup);
+  res.on('finish', cleanup);
+
+  function cleanup() {
+    // close stop listening for set changes since client is disconnecting
+    streams.forEach(s => s.end());
+    res.removeListener('close', cleanup);
+    res.removeListener('error', cleanup);
+    res.removeListener('finish', cleanup);
+  }
 
   next();
 };
