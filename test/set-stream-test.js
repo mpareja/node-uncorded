@@ -2,6 +2,7 @@
 const assert = require('chai').assert;
 const SetStream = require('../lib/set-stream');
 const sinon = require('sinon');
+const Set = require('../lib/set');
 
 describe('set-stream', () => {
   let meta;
@@ -10,7 +11,7 @@ describe('set-stream', () => {
 
   beforeEach(() => {
     states = [];
-    ss = new SetStream();
+    ss = new SetStream(new Set());
     ss.on('data', states.push.bind(states));
   });
 
@@ -85,14 +86,18 @@ describe('set-stream', () => {
     assert.deepEqual(state.adds, ss._set.adds);
     assert.deepEqual(state.removals, ss._set.removals);
   });
+
+  it('requires a set', () => {
+    assert.throws(() => new SetStream());
+  });
 });
 
 describe('set-stream - full-circle', () => {
   let a, ameta, b, bmeta;
   beforeEach(done => {
     let adone = false, bdone = false;
-    a = new SetStream();
-    b = new SetStream();
+    a = new SetStream(new Set());
+    b = new SetStream(new Set());
     a.pipe(b).pipe(a);
     a.on('finish', () => {
       // done replicating from a -> b

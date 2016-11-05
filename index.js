@@ -1,6 +1,7 @@
 'use strict';
 const bunyan = require('bunyan');
 const createServer = require('./api/server');
+const Set = require('./lib/set');
 const SetStream = require('./lib/set-stream');
 
 exports.createServer = (options) => {
@@ -31,7 +32,7 @@ exports.createServer = (options) => {
   return {
     createSet(name) {
       // assert name is not in sets already
-      return sets[name] = new SetStream();
+      return sets[name] = new SetStream(new Set());
     },
     _server: server
   };
