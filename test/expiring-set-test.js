@@ -30,6 +30,43 @@ describe('expiring-set', () => {
     expiredItemTests(test);
   });
 
+  describe('given an expired item received from a peer', () => {
+    const test = {};
+
+    beforeEach(done => {
+      const peer = new Set({ ttl: 50 });
+      test.metadata = peer.add(createDoc());
+
+      test.set = new Set({ ttl: 50 });
+      test.set.merge(peer);
+      setTimeout(done, 51);
+    });
+
+    expiredItemTests(test);
+  });
+
+  describe('given expired items and an expired item received from a peer', () => {
+    const test = {};
+
+    beforeEach(done => {
+      test.set = new Set({ ttl: 50 });
+      test.set.add(createDoc());
+
+      setTimeout(() => {
+        const peer = new Set({ ttl: 50 });
+        test.metadata = peer.add(createDoc());
+
+        setTimeout(() => {
+          test.set.add(createDoc());
+          test.set.merge(peer);
+          setTimeout(done, 51);
+        }, 1);
+      }, 1);
+    });
+
+    expiredItemTests(test);
+  });
+
   function expiredItemTests(test) {
     it('the item cannot be retrieved', () => {
       const found = test.set.get(test.metadata.id);
