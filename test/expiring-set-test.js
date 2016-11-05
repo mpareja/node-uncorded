@@ -67,6 +67,19 @@ describe('expiring-set', () => {
     expiredItemTests(test);
   });
 
+  describe('given a removed expired item', () => {
+    const test = {};
+
+    beforeEach(done => {
+      test.set = new Set({ ttl: 50 });
+      test.metadata = test.set.add(createDoc());
+      test.set.remove(test.metadata.id);
+      setTimeout(done, 51);
+    });
+
+    expiredItemTests(test);
+  });
+
   function expiredItemTests(test) {
     it('the item cannot be retrieved', () => {
       const found = test.set.get(test.metadata.id);
@@ -77,17 +90,20 @@ describe('expiring-set', () => {
       test.set.get(test.metadata.id);
       const state = test.set.state();
       assert.isUndefined(state.adds[test.metadata.id]);
+      assert.isUndefined(state.removals[test.metadata.id]);
     });
 
     it('the item is evicted from state by garbage collection', () => {
       test.set.gc();
       const state = test.set.state();
       assert.isUndefined(state.adds[test.metadata.id]);
+      assert.isUndefined(state.removals[test.metadata.id]);
     });
 
     it.skip('the item is evicted from state automatically to reclaim memory', () => {
       const state = test.set.state();
       assert.isUndefined(state.adds[test.metadata.id]);
+      assert.isUndefined(state.removals[test.metadata.id]);
     });
 
     it('garbage collection continues working after expiring all items in set', (done) => {
