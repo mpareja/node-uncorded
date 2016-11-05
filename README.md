@@ -47,7 +47,7 @@ const uncorded = require('uncorded');
 const server = uncorded.createServer({
   discovery: uncorded.discovery.elb({
     region: 'us-east-1',
-    elbName: 'uncorded-test-elb'
+    elbName: 'uncorded-elb'
   })
 });
 const tokens = server.createSet('tokens');

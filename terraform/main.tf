@@ -18,14 +18,14 @@ resource "aws_elb" "elb" {
   listener {
     lb_port = 80
     lb_protocol = "http"
-    instance_port = 8080
+    instance_port = 8199
     instance_protocol = "http"
   }
 
   health_check {
     healthy_threshold = 2
     unhealthy_threshold = 5
-    target = "HTTP:8080/"
+    target = "HTTP:8199/"
     interval = 30
     timeout = 5
   }

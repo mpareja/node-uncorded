@@ -53,7 +53,7 @@ describe('set', () => {
     const bdoc = createDoc();
     const bmeta = b.add(bdoc);
 
-    a.merge(b);
+    a.merge(b.state());
     assert.deepEqual(a.get(ameta.id).doc, adoc);
     assert.deepEqual(a.get(bmeta.id).doc, bdoc);
   });
@@ -64,10 +64,10 @@ describe('set', () => {
     const ameta = a.add(adoc);
 
     const b = new Set();
-    b.merge(a); // capture addition so it can be removed
+    b.merge(a.state()); // capture addition so it can be removed
     b.remove(ameta.id);
 
-    a.merge(b);
+    a.merge(b.state());
     assert.isUndefined(a.get(ameta.id));
   });
 
@@ -79,7 +79,7 @@ describe('set', () => {
     const b = new Set();
     const removed = b.remove(ameta.id);
 
-    a.merge(b);
+    a.merge(b.state());
 
     assert.isUndefined(removed);
     assert.deepEqual(a.get(ameta.id), ameta);
