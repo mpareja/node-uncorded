@@ -19,47 +19,50 @@ describe('expiring-set', () => {
   });
 
   describe('given an expired item', () => {
-    let doc, metadata, set;
+    const test = {};
 
     beforeEach(done => {
-      set = new Set({ ttl: 50 });
-      doc = createDoc();
-      metadata = set.add(doc);
+      test.set = new Set({ ttl: 50 });
+      test.metadata = test.set.add(createDoc());
       setTimeout(done, 51);
     });
 
+    expiredItemTests(test);
+  });
+
+  function expiredItemTests(test) {
     it('the item cannot be retrieved', () => {
-      const found = set.get(metadata.id);
+      const found = test.set.get(test.metadata.id);
       assert.isUndefined(found);
     });
 
     it('the item is evicted from state after retrieval to reclaim memory', () => {
-      set.get(metadata.id);
-      const state = set.state();
-      assert.isUndefined(state.adds[metadata.id]);
+      test.set.get(test.metadata.id);
+      const state = test.set.state();
+      assert.isUndefined(state.adds[test.metadata.id]);
     });
 
     it('the item is evicted from state by garbage collection', () => {
-      set.gc();
-      const state = set.state();
-      assert.isUndefined(state.adds[metadata.id]);
+      test.set.gc();
+      const state = test.set.state();
+      assert.isUndefined(state.adds[test.metadata.id]);
     });
 
     it.skip('the item is evicted from state automatically to reclaim memory', () => {
-      const state = set.state();
-      assert.isUndefined(state.adds[metadata.id]);
+      const state = test.set.state();
+      assert.isUndefined(state.adds[test.metadata.id]);
     });
 
     it('garbage collection continues working after expiring all items in set', (done) => {
-      const newdoc = set.add(createDoc());
+      const newdoc = test.set.add(createDoc());
       setTimeout(() => {
-        set.gc();
-        const state = set.state();
+        test.set.gc();
+        const state = test.set.state();
         assert.isUndefined(state.adds[newdoc.id]);
         done();
       }, 51);
     });
-  });
+  }
 
   describe('given an expired item and a non-expired item', () => {
     let activeMetadata, expiredMetadata, set;
