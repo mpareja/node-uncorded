@@ -1,6 +1,7 @@
 'use strict';
 const bunyan = require('bunyan');
 const createServer = require('./api/server');
+const ExpiringSet = require('./lib/expiring-set');
 const Set = require('./lib/set');
 const SetStream = require('./lib/set-stream');
 
@@ -33,6 +34,10 @@ exports.createServer = (options) => {
     createSet(name) {
       // assert name is not in sets already
       return sets[name] = new SetStream(new Set());
+    },
+    createExpiringSet(name, options) {
+      // assert name is not in sets already
+      return sets[name] = new SetStream(new ExpiringSet(options));
     },
     _server: server
   };

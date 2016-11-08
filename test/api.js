@@ -154,7 +154,7 @@ describe('API', () => {
 
       before(() => {
         a = db.createSet('a');
-        b = db.createSet('b');
+        b = db.createExpiringSet('b', { ttl: 15000 });
         c = db.createSet('c');
         a.add({ a1: 'a1' });
         b.add({ b1: 'b1' });
