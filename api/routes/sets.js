@@ -1,7 +1,7 @@
 'use strict';
 const through = require('through');
 
-module.exports = (sets) => (req, res, next) => {
+module.exports = (sets) => (req, res) => {
   let ids = req.params.ids.split(',');
 
   // ignore unexpected sets: https://github.com/mpareja/node-uncorded/issues/10
@@ -41,6 +41,4 @@ module.exports = (sets) => (req, res, next) => {
     res.removeListener('error', cleanup);
     res.removeListener('finish', cleanup);
   }
-
-  next();
 };

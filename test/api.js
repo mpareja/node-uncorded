@@ -26,6 +26,13 @@ describe('API', () => {
       .end(done);
   });
 
+  it('responds with 404 for unknown routes', done => {
+    supertest(server)
+      .get('/bogus')
+      .expect(404)
+      .end(done);
+  });
+
   describe('/sets/{set}', () => {
     describe('a set already containing a value', () => {
       let data, httpStream, splitStream, tokens, foo;
