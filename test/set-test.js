@@ -84,4 +84,13 @@ describe('set', () => {
     assert.isUndefined(removed);
     assert.deepEqual(a.get(ameta.id), ameta);
   });
+
+  it('can customize id generation', () => {
+    let i = 0;
+    const createId = () => ++i;
+    const set = new Set({ createId });
+    assert.equal(set.add(createDoc()).id, 1);
+    assert.equal(set.add(createDoc()).id, 2);
+    assert.equal(set.add(createDoc()).id, 3);
+  });
 });
