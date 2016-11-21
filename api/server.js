@@ -1,31 +1,38 @@
 'use strict';
 
-const restify = require('restify');
+const http = require('http');
+const uuid = require('uuid');
 const name = 'uncorded';
 
 module.exports = (config, log, sets) => {
-  const server = restify.createServer({ name, log });
+  const port = Number(config.port);
+  const setsRoute = require('./routes/sets')(sets);
 
-  const audit = restify.auditLogger({ log });
-  server.on('after', audit);
-  server.on('uncaughtException', (req, res, route, err) => {
-    log.error({ err }, 'uncaught exception');
-    res.send(500, err.message);
-    audit(req, res, route, err);
+  const server = http.createServer((req, res) => {
+    req.params = {};
+    req.log = log.child({ req_id: uuid.v4() });
+    req.log.info({ req }, 'incoming http request');
+
+    // get /
+    if (req.method === 'GET' && (req.url === '/' || req.url === '')) {
+      res.write('Hello World! ' + req.headers['user-agent']);
+      res.end();
+      return;
+    }
+
+    // get /sets/:ids
+    if (req.method === 'GET' && req.url.substr(0, 6) === '/sets/') {
+      req.params.ids = req.url.substr(6);
+      setsRoute(req, res);
+      return;
+    }
+
+    res.writeHead(404);
+    res.end();
   });
 
-  server.use(restify.queryParser());
-
-  server.get('/', (req, res, next) => {
-    res.send(200, 'Hello World! ' + req.headers['user-agent']);
-    next();
-  });
-
-  server.get('/sets/:ids', require('./routes/sets')(sets));
-  server.post('/error', require('./routes/error'));
-
-  server.listen(config.port, function () {
-    log.info({ event: 'serviceStarting' }, `${name} service started successfully.`);
+  server.listen(port, () => {
+    log.info({ event: 'serviceStarting', port }, `${name} service started successfully.`);
   });
 
   return server;

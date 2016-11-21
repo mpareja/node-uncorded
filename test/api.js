@@ -26,22 +26,11 @@ describe('API', () => {
       .end(done);
   });
 
-  describe('POST /error', () => {
-    it('can generate error message to test monitoring', done => {
-      supertest(server)
-        .post('/error')
-        .expect(500)
-        .expect('"TEST error"')
-        .end(done);
-    });
-
-    it('can supply a custom error message value', done => {
-      supertest(server)
-        .post('/error?msg=errorTest1')
-        .expect(500)
-        .expect('"errorTest1"')
-        .end(done);
-    });
+  it('responds with 404 for unknown routes', done => {
+    supertest(server)
+      .get('/bogus')
+      .expect(404)
+      .end(done);
   });
 
   describe('/sets/{set}', () => {

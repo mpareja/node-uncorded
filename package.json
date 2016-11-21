@@ -35,10 +35,9 @@
     "lodash": "^4.6.1",
     "rc": "^1.1.6",
     "request": "^2.72.0",
-    "restify": "^4.0.4",
     "split": "^1.0.0",
     "through": "^2.3.8",
-    "uuid": "^2.0.1"
+    "uuid": "^2.0.3"
   },
   "devDependencies": {
     "chai": "^3.5.0",
