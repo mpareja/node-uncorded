@@ -31,9 +31,9 @@ exports.createServer = (options) => {
   const server = createServer(config, log, sets);
 
   return {
-    createSet(name) {
+    createSet(name, options) {
       // assert name is not in sets already
-      return sets[name] = new SetStream(new Set());
+      return sets[name] = new SetStream(new Set(options));
     },
     createExpiringSet(name, options) {
       // assert name is not in sets already
