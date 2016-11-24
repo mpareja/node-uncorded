@@ -82,6 +82,8 @@ Uncorded comes built-in with a module for discovering peers based on healthy ins
   + `interval`: the period of time to delay between polling for healthy nodes.
   + `port`: the port to connect to peers on - must match `port` passed into `createServer`.
 
+The instances your running need to have the correct IAM policies to describe load balancer instances. Review the [Terraform](https://www.terraform.io) example files to see [how to provision instances with the correct policy](terraform/iam.tf).
+
 In the future, this discovery module may automatically detect the `region` and `elbName` based on the instance uncorded is running from.
 
 ## Configuration
