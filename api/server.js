@@ -22,6 +22,7 @@ module.exports = (config, log, sets) => {
 
     // get /sets/:ids
     if (req.method === 'GET' && req.url.substr(0, 6) === '/sets/') {
+      res.setTimeout(0); // disable 2 minute TCP timeout
       req.params.ids = req.url.substr(6);
       setsRoute(req, res);
       return;
