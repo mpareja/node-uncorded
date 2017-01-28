@@ -67,7 +67,19 @@ An instance of a [`bunyan`](https://github.com/trentm/node-bunyan) logger or an 
 
 #### `discovery`
 
-An implementation of the [cluster discovery](#cluster-discovery) interface like the ELB cluster discovery module. If the `discovery` options is not specified, uncorded will warn and disable cluster discovery.
+Uncorded discovery is pluggable. If the `discovery` options is not specified, uncorded will warn and disable cluster discovery.
+
+You can supply your own implementation or use a built-in option. The built-in options are accessible programmatically as properties of the `uncorded.discovery` object. Alternatively, you can declare the use of a built-in option by passing an object with the following format:
+
+```
+{
+  type: 'elb',
+  options: {
+    region: 'us-east-1',
+    elbName: 'uncorded-elb'
+  }
+}
+```
 
 ## Cluster Discovery
 
