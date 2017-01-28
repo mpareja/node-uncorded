@@ -5,15 +5,17 @@ const sinon = require('sinon');
 const uncorded = require('../');
 
 describe('clustering', () => {
-  let discovery, log;
+  let log;
 
   beforeEach(() => {
-    discovery = new EventEmitter();
     log = { info: sinon.spy(), warn: sinon.spy(), error: sinon.spy(), child: sinon.stub().returns(log) };
   });
 
-  describe('successfully enabling clustering', () => {
+  describe('successfully enabling clustering by providing an implementation', () => {
+    let discovery;
+
     beforeEach(() => {
+      discovery = new EventEmitter();
       const db = uncorded.createServer({ log: log, discovery });
       db._server.close();
     });
@@ -39,6 +41,14 @@ describe('clustering', () => {
     });
   });
 
+  it('supports successfully enabling clustering by declaring the type', () => {
+    const discovery = { type: 'static', options: [ 'http://10.1.1.1:8199', 'http://10.2.2.2:8200' ] };
+    const db = uncorded.createServer({ log: log, discovery });
+    db._server.close();
+
+    sinon.assert.calledWith(log.info, 'clustering enabled');
+  });
+
   it('warns when clustering method was not supplied', () => {
     const db = uncorded.createServer({ log: log });
     db._server.close();
@@ -46,9 +56,20 @@ describe('clustering', () => {
     sinon.assert.calledWith(log.warn, 'clustering disabled: discovery method not specified');
   });
 
-  it('throws when clustering method is invalid', () => {
+  it('throws when clustering implementation is invalid', () => {
     try {
-      uncorded.createServer({ discovery: {} });
+      uncorded.createServer({ discovery: function () {} });
+    } catch (err) {
+      assert.instanceOf(err, Error);
+      assert.equal(err.message, 'invalid cluster discovery method');
+      return;
+    }
+    throw new Error('expected error due to invalid clustering method');
+  });
+
+  it('throws when declared clustering type is invalid', () => {
+    try {
+      uncorded.createServer({ discovery: { type: 'bogus' } });
     } catch (err) {
       assert.instanceOf(err, Error);
       assert.equal(err.message, 'invalid cluster discovery method');
